@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/recycler_view_item_height"
+    android:padding="@dimen/recycler_view_item_padding"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:id="@+id/image_avatar"
+        android:layout_width="@dimen/image_avatar_size"
+        android:layout_height="@dimen/image_avatar_size"
+        android:src="@drawable/outline_account_circle_24"
+        android:contentDescription="@string/avatar_image"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/text_contact_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        tools:text="Contact Name"
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:paddingHorizontal="@dimen/margin_small"
+        app:layout_constraintStart_toEndOf="@id/image_avatar"
+        app:layout_constraintTop_toTopOf="@id/image_avatar"
+        app:layout_constraintEnd_toStartOf="@id/button_delete" />
+
+    <TextView
+        android:id="@+id/text_contact_number"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        tools:text="+1 234 567 8901"
+        android:paddingHorizontal="@dimen/margin_small"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        app:layout_constraintStart_toStartOf="@id/text_contact_name"
+        app:layout_constraintTop_toBottomOf="@id/text_contact_name"
+        app:layout_constraintEnd_toEndOf="@id/text_contact_name" />
+
+    <ImageButton
+        android:id="@+id/button_delete"
+        android:layout_width="@dimen/button_delete_size"
+        android:layout_height="@dimen/button_delete_size"
+        android:src="@drawable/outline_delete_24"
+        android:contentDescription="@string/delete"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
