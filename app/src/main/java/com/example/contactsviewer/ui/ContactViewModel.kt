@@ -1,5 +1,7 @@
 package com.example.contactsviewer.ui
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.contactsviewer.data.ContactRepository
@@ -14,15 +16,24 @@ class ContactViewModel(private val repository: ContactRepository) : ViewModel() 
     val contacts: StateFlow<List<Contact>> = repository.getAllContacts()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addContact(contact: Contact) {
+    fun addContact(context: Context, contact: Contact, selectedImageUri: Uri?) {
         viewModelScope.launch {
-            repository.addContact(contact)
+            val newContactId = repository.addContact(contact)
+            selectedImageUri?.let { uri ->
+                saveAvatarImage(context, uri, newContactId)
+            }
         }
     }
 
     fun deleteContact(contactId: Long) {
         viewModelScope.launch {
             repository.deleteContact(contactId)
+        }
+    }
+
+    fun saveAvatarImage(context: Context, uri: Uri, contactId: Long) {
+        viewModelScope.launch {
+            repository.saveAvatarImage(context, uri, contactId)
         }
     }
 }

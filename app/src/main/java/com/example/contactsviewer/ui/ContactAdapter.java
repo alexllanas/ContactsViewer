@@ -58,6 +58,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 }
             }
         });
+        holder.avatarImage.setOnClickListener(v -> {
+            int currentPosition = holder.getBindingAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                if (contact.getId() != null) {
+                    listener.onAvatarClick(contact.getId());
+                }
+            }
+        });
     }
 
     @Override
@@ -69,6 +77,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         if (contact.getAvatarPath() != null) {
             Glide.with(holder.itemView.getContext())
                     .load(new File(contact.getAvatarPath()))
+                    .circleCrop()
                     .placeholder(R.drawable.outline_account_circle_24)
                     .into(holder.avatarImage);
         } else {
@@ -93,5 +102,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
     interface Listener {
         void onDeleteContact(long contactId);
+
+        void onAvatarClick(long contactId);
     }
 }

@@ -1,8 +1,10 @@
 package com.example.contactsviewer.ui
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -13,17 +15,37 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.contactsviewer.R
-import com.example.contactsviewer.data.ContactDao
+import com.example.contactsviewer.data.ContactDatabase
 import com.example.contactsviewer.data.ContactDbHelper
 import com.example.contactsviewer.data.ContactRepository
+import com.example.contactsviewer.model.Contact
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private var adapter: ContactAdapter? = null
+    private var selectedContactId: Long? = null
+
     private val viewModel: ContactViewModel by viewModels {
-        ContactViewModelFactory(ContactRepository(ContactDao(ContactDbHelper(this))))
+        ContactViewModelFactory(ContactRepository(ContactDatabase(ContactDbHelper(this))))
+    }
+
+    private val imageGalleryLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
+            if (imageUri != null && selectedContactId != null) {
+                viewModel.saveAvatarImage(this, imageUri, selectedContactId!!)
+            }
+        }
+
+    private val listener = object : ContactAdapter.Listener {
+        override fun onDeleteContact(contactId: Long) {
+            viewModel.deleteContact(contactId)
+        }
+
+        override fun onAvatarClick(contactId: Long) {
+            launchImageGallery(contactId = contactId)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,9 +73,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         findViewById<FloatingActionButton>(R.id.fab_add_contact).setOnClickListener {
-            val dialog = AddContactDialog { newContact ->
-                viewModel.addContact(newContact)
-            }
+            val dialog = AddContactDialog(object : AddContactDialog.Listener {
+                override fun onAdd(contact: Contact, selectedImageUri: Uri?) {
+                    viewModel.addContact(context = this@MainActivity, contact, selectedImageUri)
+                }
+
+                override fun onAvatarClick() {
+                    launchImageGallery(contactId = null)
+                }
+            })
             dialog.show(supportFragmentManager, "AddContactDialog")
         }
     }
@@ -63,13 +91,14 @@ class MainActivity : AppCompatActivity() {
         recyclerView.setLayoutManager(LinearLayoutManager(this))
 
         adapter = ContactAdapter()
-        adapter?.setListener(object : ContactAdapter.Listener {
-            override fun onDeleteContact(contactId: Long) {
-                viewModel.deleteContact(contactId)
-            }
-        })
+        adapter?.setListener(listener)
 
         recyclerView.setAdapter(adapter)
+    }
+
+    private fun launchImageGallery(contactId: Long?) {
+        selectedContactId = contactId
+        imageGalleryLauncher.launch("image/*")
     }
 
     private fun loadContacts() {

@@ -2,7 +2,7 @@ package com.example.contactsviewer.data
 
 import com.example.contactsviewer.model.Contact
 
-class ContactDao(private val dbHelper: ContactDbHelper) {
+class ContactDatabase(private val dbHelper: ContactDbHelper) {
 
     fun getAllContacts(): List<Contact> {
         val contacts = mutableListOf<Contact>()
@@ -35,7 +35,7 @@ class ContactDao(private val dbHelper: ContactDbHelper) {
         return contacts
     }
 
-    fun insert(contact: Contact) {
+    fun insert(contact: Contact): Long {
         val db = dbHelper.readableDatabase
 
         val insertQuery = """
@@ -51,8 +51,9 @@ class ContactDao(private val dbHelper: ContactDbHelper) {
         } else {
             stmt.bindNull(3)
         }
-        stmt.executeInsert()
+        val insertedId = stmt.executeInsert()
         stmt.close()
+        return insertedId
     }
 
     fun delete(contactId: Long) {
@@ -64,6 +65,21 @@ class ContactDao(private val dbHelper: ContactDbHelper) {
             """.trimIndent()
         val stmt = db.compileStatement(deleteQuery)
         stmt.bindLong(1, contactId)
+        stmt.executeUpdateDelete()
+        stmt.close()
+    }
+
+    fun updateAvatarPath(filePath: String, contactId: Long) {
+        val db = dbHelper.readableDatabase
+
+        val updateQuery = """
+                UPDATE ${ContactDbHelper.TABLE_NAME} 
+                SET ${ContactDbHelper.COLUMN_AVATAR_PATH} = ? 
+                WHERE ${ContactDbHelper.COLUMN_ID} = ?;
+            """.trimIndent()
+        val stmt = db.compileStatement(updateQuery)
+        stmt.bindString(1, filePath)
+        stmt.bindLong(2, contactId)
         stmt.executeUpdateDelete()
         stmt.close()
     }
