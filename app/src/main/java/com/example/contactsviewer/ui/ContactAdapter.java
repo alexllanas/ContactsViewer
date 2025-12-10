@@ -1,5 +1,6 @@
 package com.example.contactsviewer.ui;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +21,16 @@ import java.util.List;
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
 
     private List<Contact> data;
+    private Listener listener;
 
-    public ContactAdapter(List<Contact> data) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void submitData(List<Contact> data) {
         this.data = data;
+        notifyDataSetChanged();
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -43,8 +51,11 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         holder.deleteButton.setOnClickListener(v -> {
             int currentPosition = holder.getBindingAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
-                data.remove(currentPosition);
-                notifyItemRemoved(currentPosition);
+                if (contact.getId() != null) {
+                    data.remove(currentPosition);
+                    listener.onDeleteContact(contact.getId());
+                    notifyItemRemoved(currentPosition);
+                }
             }
         });
     }
@@ -78,5 +89,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             contactNumber = itemView.findViewById(R.id.text_contact_number);
             deleteButton = itemView.findViewById(R.id.button_delete);
         }
+    }
+
+    interface Listener {
+        void onDeleteContact(long contactId);
     }
 }

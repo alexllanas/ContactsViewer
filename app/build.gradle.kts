@@ -60,4 +60,7 @@ dependencies {
 
     // Gson for JSON parsing
     implementation(libs.gson)
+
+    // ViewModel + LiveData KTX
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
