@@ -9,6 +9,9 @@ import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
 import com.example.contactsviewer.databinding.DialogAddContactBinding
 import com.example.contactsviewer.model.Contact
+import com.example.contactsviewer.util.attachPhoneNumberFormatter
+import com.example.contactsviewer.util.getNormalizedPhoneNumber
+import com.example.contactsviewer.util.isValidPhoneNumber
 
 class AddContactDialog(
     private val listener: Listener
@@ -29,17 +32,28 @@ class AddContactDialog(
             .setView(binding.root)
             .create()
 
+        binding.editTextPhone.attachPhoneNumberFormatter()
+
         binding.buttonAdd.setOnClickListener {
             val name = binding.editTextName.text.toString()
-            val phoneNumber = binding.editTextPhone.text.toString()
-            if (name.isNotEmpty() && phoneNumber.isNotEmpty()) {
-                val contact = Contact(
-                    name = binding.editTextName.text.toString(),
-                    phoneNumber = binding.editTextPhone.text.toString()
-                )
-                listener.onAdd(contact, selectedImageUri)
-                dismiss()
+
+            var valid = true
+            if (name.isEmpty()) {
+                binding.editTextName.error = "Name cannot be empty"
+                valid = false
             }
+            if (!binding.editTextPhone.isValidPhoneNumber()) {
+                binding.editTextPhone.error = "Invalid phone number"
+                valid = false
+            }
+            if (!valid) return@setOnClickListener
+
+            val contact = Contact(
+                name = binding.editTextName.text.toString(),
+                phoneNumber = binding.editTextPhone.text.toString()
+            )
+            listener.onAdd(contact, selectedImageUri)
+            dismiss()
         }
 
         binding.buttonCancel.setOnClickListener { dismiss() }
