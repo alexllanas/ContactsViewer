@@ -1,8 +1,11 @@
 package com.example.contactsviewer.ui
 
+import android.app.Activity
 import android.app.Dialog
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
@@ -25,9 +28,7 @@ class AddContactDialog(
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogAddContactBinding.inflate(layoutInflater)
 
-        val builder = AlertDialog.Builder(requireActivity())
-
-        builder
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Add New Contact")
             .setView(binding.root)
             .create()
@@ -59,22 +60,33 @@ class AddContactDialog(
         binding.buttonCancel.setOnClickListener { dismiss() }
 
         binding.imageAvatar.setOnClickListener {
-            imageGalleryLauncher.launch("image/*")
+            val intent = Intent(
+                Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            ).apply { type = "image/*" }
+            galleryLauncher.launch(intent)
         }
 
-        return builder.create()
+        return dialog
     }
 
-    private val imageGalleryLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
-            if (imageUri != null) {
-                Glide.with(requireContext())
-                    .load(imageUri)
-                    .circleCrop()
-                    .into(binding.imageAvatar)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
-                selectedImageUri = imageUri
-            }
+    private val galleryLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+
+            val imageUri = result.data?.data ?: return@registerForActivityResult
+            val currentBinding = _binding ?: return@registerForActivityResult
+            Glide.with(requireContext())
+                .load(imageUri)
+                .circleCrop()
+                .into(currentBinding.imageAvatar)
+
+            selectedImageUri = imageUri
         }
 
     interface Listener {
